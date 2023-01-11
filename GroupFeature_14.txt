@@ -1,0 +1,56 @@
+-- Start of feature 14 -- 
+/*
+This Procedure recommends a restaurant to the input customer that has not been to with its average score, address and other details
+
+Author : Tamil Selvan Gurunathan
+*/
+
+Create or replace procedure Restaurnt_Recomd_Pr (Cust_ID in number) is
+
+temp_count int;
+begin
+select count(*) into temp_count from customer where customerid = Cust_ID;
+if temp_count >0 then
+    declare cursor c1 is select distinct(restaurantid) from orders where customerid = Cust_ID;
+    begin
+        for r in c1 loop
+            dbms_output.put_line('Restaurant id : ' || r.restaurantid);
+            select count(*) into temp_count from orders where restaurantid = r.restaurantid and customerid not in Cust_ID;
+            if temp_count >0 then
+                declare cursor c2 is select customerid from orders where restaurantid = r.restaurantid and customerid not in Cust_ID;
+                begin
+                for i in c2 loop
+                   dbms_output.put_line('Customer been to these same restaurant is : ' || i.customerid);
+                    select count(*) into temp_count from orders where customerid = i.customerid and restaurantid not in r.restaurantid;
+                    if temp_count >0 then
+                        declare cursor c3 is select restaurants.restaurantid, restaurants.restaurantname, restaurants.address, restaurants.averagereviewscore from orders, restaurants  where orders.customerid = i.customerid and restaurants.restaurantid not in r.restaurantid and restaurants.restaurantID = orders.restaurantID;
+                        begin
+                        for a in c3 loop
+                            dbms_output.put_line('Below Restaurants are recommended to the input customer  :' || Cust_ID );
+                             dbms_output.put_line('RestaurantID: ' ||  a.restaurantid  )   ;                         
+                             dbms_output.put_line('RestaurantName:  ' || a.restaurantname );
+                              dbms_output.put_line('Restaurant Address :  ' || a.address );
+                               dbms_output.put_line('ReviewScore:  ' || a.averagereviewscore);
+                        end loop; 
+                        end;
+                    end if;
+                end loop;
+                end;
+            end if;
+        end loop;
+    end;
+else 
+dbms_output.put_line('The customer Id entered is not valid.');
+end if;
+end;
+/
+
+-- case 1 : Recommends a restaurant --
+select * from orders where customerid=2;
+exec Restaurnt_Recomd_Pr(2);
+
+-- case 2 : Invalid customer id  --
+select * from orders where customerid=2;
+exec Restaurnt_Recomd_Pr(21);
+
+-- end of feature 14--

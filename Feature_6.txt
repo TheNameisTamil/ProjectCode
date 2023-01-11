@@ -1,0 +1,66 @@
+-- Start of feature 6 --
+/*
+Remove a dish from shopping cart
+Input: Dish Id and Cart Id
+Output: screen output of ‘the cart id is invalid' if a cart does not contain the Id. 
+If Cart Id is valid then check quantity --> if it is more than 1 then reduce it and print 'quantity reduced'. 
+If the quantity is 1 --> then remove from cart and print 'dish removed'
+Author: Monil Darshan Mehta
+*/
+CREATE OR REPLACE PROCEDURE REMOVE_DISHES(CARTID_I NUMBER, DISHID_I NUMBER) 
+AS
+--variable declared
+T_COUNT INT;
+DISHNAME_I VARCHAR(50);
+QUANTITY_I NUMBER;
+CARTDETAILSID_I NUMBER; 
+
+BEGIN
+-- Checking for a valid cart id
+SELECT COUNT(*) INTO T_COUNT FROM CART WHERE CARTID=CARTID_I;
+IF T_COUNT =0 THEN
+    DBMS_OUTPUT.PUT_LINE('NOT A VALID CART ID'); 
+    RETURN;
+END IF;
+-- Checking for a valid dish id
+SELECT COUNT(*) INTO T_COUNT FROM FOODITEMS WHERE DISHID=DISHID_I;
+IF T_COUNT =0 THEN
+    DBMS_OUTPUT.PUT_LINE('NOT A VALID DISH ID'); 
+    RETURN;
+END IF;
+-- storing dishname, quantity and cartdetailsid into decalred variables
+SELECT DISHNAME, QUANTITY, CARTDETAILSID INTO DISHNAME_I, QUANTITY_I, CARTDETAILSID_I
+FROM FOODITEMS D, CART C, CARTDETAILS CD
+WHERE C.CARTID = CD.CARTID AND D.DISHID = CD.DISHID AND C.CARTID = CARTID_I AND D.DISHID = DISHID_I; 
+-- checking the quantity of the dish
+IF QUANTITY_I >1 THEN 
+ --Deleting count of quantity from n --> n-1
+    UPDATE CARTDETAILS SET QUANTITY=QUANTITY-1 WHERE CARTDETAILSID = CARTDETAILSID_I;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('DISH QUANTITY REDUCED');
+ELSE
+--Deleting the row if quantity = 1 
+	DELETE FROM CARTDETAILS WHERE DISHID = DISHID_I; 
+	COMMIT;
+    DBMS_OUTPUT.PUT_LINE('DISH REMOVED');
+END IF;
+END;
+/
+set serveroutput on;
+-- case 1: Cart id and dish id is valid and hence reducing the quantity
+exec REMOVE_DISHES(1,11);
+select * from cart WHERE cartid=1;
+select * from cartdetails where dishid=11;
+
+-- case 2: Cart id and dish id is valid and hence reducing the quantity
+exec REMOVE_DISHES(1,13);
+select * from cart WHERE cartid=1;
+select * from cartdetails where dishid=13;
+
+-- case 3: Cart id and dish id is not valid 
+exec REMOVE_DISHES(10,31);
+
+-- case 4: cart id is not valid but dish id is valid
+exec REMOVE_DISHES(1,33);
+
+-- End of feature 6 --

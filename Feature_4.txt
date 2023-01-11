@@ -1,0 +1,41 @@
+-- Start of feature 4 -- 
+/*
+This procedure shows the dishes offered by the restaurant which take the restaurantid as input and outputs all the dishes along with dish names and price offered by restaurant by validating it with the the ID's restaurant table if valid. Else it prints " no such restarurant exists"
+Author: Bhargavi Gudapati
+*/
+
+CREATE OR REPLACE PROCEDURE RESTAURANT_DISHES_PR (V_RID NUMBER)
+IS 
+-- checking if the restaurant id from fooditems, restaurant and input ID matches
+CURSOR C1 IS SELECT DISHNAME, PRICE 
+FROM FOODITEMS D, RESTAURANTS R    
+WHERE D.RESTAURANTID = R.RESTAURANTID AND D.RESTAURANTID = V_RID;
+V_COUNT INT;
+RESTAURANT_NAME_VAR VARCHAR(50);
+BEGIN
+-- checking if the restaurant Id and input id matches. If so the COUNT is taken
+ SELECT COUNT(*) INTO V_COUNT FROM RESTAURANTS WHERE RESTAURANTID = V_RID;   
+ IF V_COUNT = 0 THEN    -- if COUNT is 0, then prints the statement
+   DBMS_OUTPUT.PUT_LINE('NO SUCH RESTAURANT');
+ ELSE
+  -- loop runs for each item stored in the cursor and prints the name, cost and item price
+   SELECT RESTAURANTNAME INTO RESTAURANT_NAME_VAR FROM RESTAURANTS WHERE RESTAURANTID = V_RID;
+       DBMS_OUTPUT.PUT_LINE(' RESTAURANT NAME : ' || RESTAURANT_NAME_VAR );
+       DBMS_OUTPUT.PUT_LINE(' ====================================' );
+
+  FOR ITEM IN C1 LOOP 
+    DBMS_OUTPUT.PUT_LINE(ITEM.DISHNAME || '    |     ' ||  'COST :  ' || ITEM.PRICE);
+ END LOOP; 
+ END IF;
+END;
+/
+
+--case 1 : Dishes from a valid restaurant id
+
+exec RESTAURANT_DISHES_PR(1);
+
+--case 2 : invalid restaurant id
+
+exec RESTAURANT_DISHES_PR(11);
+
+-- End of feature 4 -- 

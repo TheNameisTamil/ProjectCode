@@ -1,0 +1,55 @@
+
+--Start of feature 08--
+/*
+This procedure accepts customer ID, a restaurant ID, a review date, a review score and review comment as input and inserts a new row into
+the review table and updates the average review score of the restaurant in the restaurants table.
+
+Author : Tamil Selvan Gurunathan
+*/
+
+CREATE OR REPLACE PROCEDURE WRITE_REVIEW_PR(CUSTOMER_ID_I IN NUMBER, RESTAURANT_ID_I IN FLOAT, REVIEW_SCORE_I IN NUMBER, REVIEW_COMMENT_I IN VARCHAR)
+AS
+
+REVIEW VARCHAR(300);
+TEMP_COUNT INT;
+REVIEW_SCORE_TAB FLOAT;
+BEGIN
+--Condition to check for a valid customer id
+SELECT NVL(COUNT(*),0) INTO TEMP_COUNT FROM CUSTOMER WHERE CUSTOMERID = CUSTOMER_ID_I;
+IF TEMP_COUNT > 0 THEN 
+--Condition to check for a valid Resturant id
+    SELECT NVL(COUNT(*),0) INTO TEMP_COUNT FROM RESTAURANTS WHERE RESTAURANTID = RESTAURANT_ID_I;
+    IF TEMP_COUNT > 0 THEN
+    -- If the above conditions satisfies, inserting a review into review table 
+        INSERT INTO REVIEW VALUES(REVIEW_SEQ.NEXTVAL,CUSTOMER_ID_I,RESTAURANT_ID_I,SYSDATE,REVIEW_SCORE_I,REVIEW_COMMENT_I);
+        DBMS_OUTPUT.PUT_LINE('SUCCESSFULY INSERTED IN TO REVIEW TABLE');
+        SELECT AVERAGEREVIEWSCORE INTO REVIEW_SCORE_TAB FROM RESTAURANTS WHERE RESTAURANTID=RESTAURANT_ID_I;
+        REVIEW_SCORE_TAB:=((REVIEW_SCORE_TAB + REVIEW_SCORE_I)/2);
+        
+    -- Updating the restaurants table with the average review score for the restaurant that has got the new review
+        UPDATE RESTAURANTS SET AVERAGEREVIEWSCORE = REVIEW_SCORE_TAB WHERE RESTAURANTID=RESTAURANT_ID_I;
+        DBMS_OUTPUT.PUT_LINE('SUCCESSFULY UPDATED THE RESTAURANT TABLE WITH AVERAGE REVIEW SCORE WITH NEW SCORE  : ' || REVIEW_SCORE_TAB);
+     ELSE
+        DBMS_OUTPUT.PUT_LINE('THE RESTAURANT ID IS INVALID');
+    END IF;
+ELSE 
+    DBMS_OUTPUT.PUT_LINE('THE CUSTOMERID IS INVALID');
+END IF;
+END;
+/
+
+
+--case 1 : A valid customer entering a new review for a valid restaurant
+select * from restaurants where restaurantid=5;
+select * from review where restaurantid=5;
+exec WRITE_REVIEW_PR(4,5, 3, 'Not bad');
+select * from restaurants where restaurantid=5;
+select * from review where restaurantid=5;
+
+--case 2 : An invalid customer entering a new review for a valid restaurant
+exec WRITE_REVIEW_PR(41,5, 3, 'Not bad');
+
+--case 3 : An valid customer entering a new review for an invalid restaurant
+exec WRITE_REVIEW_PR(4,15, 3, 'Not bad');
+
+--End of feature 08--

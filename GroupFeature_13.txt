@@ -1,0 +1,71 @@
+
+-- Start of feature 13 -- 
+/*
+This procedure accepts customer ID, a list of category names, a minimal review score, and a wait time as input and outputs the list of 
+restaurants that falls under the input category names. 
+
+Author : Jayesh Jaywant Naik
+*/
+
+create or replace PROCEDURE ADVANCED_RESTAURANT_SEARCH_PR(CUSTOMER_ID_I IN NUMBER, RESTAURANT_LIST_I RESTAURANT_LIST,REVIEWSCORE_I IN FLOAT ,WAITTIME_I IN NUMBER)
+AS
+
+TEMP_COUNT INT;
+TEMP_CATEGORY NUMBER;
+CUST_ZIPCODE CUSTOMER.ZIPCODE%TYPE;
+
+BEGIN
+SELECT NVL(COUNT(*),0) INTO TEMP_COUNT FROM CUSTOMER WHERE CUSTOMERID = CUSTOMER_ID_I;-- Checking if customer is present or not if not present then return 0
+
+-- Checking if the customer is valid or not
+IF TEMP_COUNT > 0 THEN 
+    SELECT SUBSTR(ZIPCODE,1,4) INTO CUST_ZIPCODE FROM CUSTOMER WHERE CUSTOMERID = CUSTOMER_ID_I; -- Taking the Substring of Zipcode.
+    
+    --Using for loop to iterate all the select values
+    FOR R IN(SELECT RESTAURANTNAME,ADDRESS,CURRENTSTATUS,AVERAGEREVIEWSCORE,ZIPCODE,AVERAGEWAITTIME 
+        FROM RESTAURANTS R, CATEGORIES C, RESTAURANTCATEGORIES RC  WHERE R.RESTAURANTID = RC.RESTAURANTID AND C.CATEGORYID = RC.CATEGORYID 
+        AND C.CATEGORYNAME IN (SELECT * FROM TABLE(RESTAURANT_LIST_I)) -- To check the Category names
+        AND R.AVERAGEWAITTIME <= WAITTIME_I -- To check the average time
+        AND R.AVERAGEREVIEWSCORE >= REVIEWSCORE_I -- To check the review score
+        AND (SUBSTR(ZIPCODE,1,4)) = (SUBSTR(CUST_ZIPCODE,1, 4))) -- To check zipcode
+        
+        --Using loop to print all the select values
+        LOOP
+                DBMS_OUTPUT.PUT_LINE('RESTAURANT NAME : ' || R.RESTAURANTNAME);
+                DBMS_OUTPUT.PUT_LINE('  RESTAURANT ADDRESS :' || R.ADDRESS);
+                DBMS_OUTPUT.PUT_LINE('  RESTAURANT STATUS :' || R.CURRENTSTATUS);
+                DBMS_OUTPUT.PUT_LINE('  SCORE :' || R.AVERAGEREVIEWSCORE);
+                DBMS_OUTPUT.PUT_LINE('  ZIPCODE :' || R.ZIPCODE);
+                DBMS_OUTPUT.PUT_LINE('  WAIT TIME :' || R.AVERAGEWAITTIME);
+        END LOOP;  
+ELSE 
+    DBMS_OUTPUT.PUT_LINE('INVALID CUSTOMER');
+END IF;
+END;
+
+/
+
+set serveroutput on;
+-- Case 1 : Lists all restaurant that matches the category names
+DECLARE 
+Array_In RESTAURANT_LIST;
+BEGIN
+Array_In := RESTAURANT_LIST('Indian','Fastfood','Italian');
+ADVANCED_RESTAURANT_SEARCH_PR(1,Array_In,2.0,60);
+END;
+/
+select zipcode from customer where customerid=1;
+select r.restaurantname, c.categoryname, r.zipcode, r.averagereviewscore from restaurants r, restaurantcategories rc , categories c where r.restaurantid = rc.restaurantid and rc.categoryid = c.categoryid and zipcode like '2122%' and c.categoryname in ('Indian','Fastfood','Italian');-- End of feature 03 -- 
+
+
+-- Case 2 : Invalid Customer
+DECLARE
+Array_In RESTAURANT_LIST;
+BEGIN
+Array_In := RESTAURANT_LIST('Indian','Fastfood','Italian');
+ADVANCED_RESTAURANT_SEARCH_PR(11,Array_In,2.0,60);
+END;
+/
+select zipcode from customer where customerid=11;
+
+-- end of feature 13 -- 

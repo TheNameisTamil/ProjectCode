@@ -1,0 +1,46 @@
+-- start of feature 1 -- 
+
+/*
+This procedure accepts customer name, address, state, zipcode, email as input and checks whether customer with same email exists if so it prints "Customer already exists" and updates address, state, and zip. Else a new row is inserted into customer table with the entered details and the procedure outputs the new customer id 
+
+Author : Sathwik Muduthanapelly 
+*/
+CREATE OR REPLACE PROCEDURE ADDCUSTOMER_PR
+(
+  CUSTOMERID_I NUMBER,
+  NAME_I VARCHAR,
+  ADDRESS_I VARCHAR,
+  STATE_I VARCHAR,
+  ZIPCODE_I NUMBER,
+  EMAIL_I VARCHAR,
+  CREDIT_I NUMBER
+)
+AS
+V_TEMP_EMAIL VARCHAR(50);
+BEGIN
+-- step 1 : checking if the customer with same email exists
+    SELECT NVL(COUNT(*),0) INTO V_TEMP_EMAIL FROM CUSTOMER WHERE EMAIL = EMAIL_I;
+    IF V_TEMP_EMAIL >0 THEN
+        DBMS_OUTPUT.PUT_LINE('THE CLIENT ALREADY EXISTS. UPDATING THE TABLE WITH INPUT DATA.');
+        UPDATE CUSTOMER SET ADDRESS= ADDRESS_I,STATE= STATE_I,ZIPCODE = ZIPCODE_I WHERE EMAIL = EMAIL_I;
+-- step 2 : New row is inserted in to customer table if the customer does not exist
+    ELSE
+        INSERT INTO CUSTOMER VALUES(CUSTOMERS_SEQ.NEXTVAL, NAME_I ,ADDRESS_I , ZIPCODE_I,STATE_I,EMAIL_I,CREDIT_I);
+        DBMS_OUTPUT.PUT_LINE('ENTERING NEW CUSTOMER');
+    END IF;
+END;
+/
+
+set serveroutput on;
+--case 1 : A new customer is inserted into the table.
+select * from customer where customerid=7;
+exec ADDCUSTOMER_PR(7,'Peter Barns','16 rolling hills road','Maryland', 21230,'peterbarns@gmail.com',30) ;
+
+--case 2 : customer already exists and the same is updated.
+select * from customer where customerid=7;
+exec ADDCUSTOMER_PR(7,'Peter Barns','20 river circle','Conneticut', 21080,'peterbarns@gmail.com',30) ;
+select * from customer where customerid=7;
+
+
+-- start of feature 1 -- 
+

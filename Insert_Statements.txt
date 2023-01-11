@@ -1,0 +1,383 @@
+
+clear screen;
+
+drop sequence cart_seq;
+drop sequence cartdetails_seq;
+drop sequence customers_seq;
+drop sequence orders_seq;
+drop sequence PAYMENTRECORDS_SEQ;
+drop sequence review_seq;
+drop sequence MESSAGE_SEQ;
+drop sequence orderdetails_seq;
+drop sequence restaurants_seq;
+
+
+drop table customer cascade constraints;
+drop table discounts cascade constraints;
+drop table salestax cascade constraints;
+drop table restaurants cascade constraints;
+drop table restaurantcategories cascade constraints;
+drop table categories cascade constraints;
+drop table fooditems cascade constraints;
+drop table review cascade constraints;
+drop table cart cascade constraints;
+drop table cartdetails cascade constraints;
+drop table orders cascade constraints;
+drop table orderdetails cascade constraints;
+drop table paymentrecords cascade constraints;
+drop table message cascade constraints;
+drop table customerdiscounts cascade constraints;
+
+
+
+create table Customer(
+customerID Number,
+name Varchar(50),
+address Varchar(250),
+zipcode Number,
+state Varchar(50),
+email Varchar(50),
+credit Number,
+primary key (customerID)
+);
+
+create table Discounts(
+discountID NUMBER,
+discountDescription Varchar(500),
+discountType NUMBER,
+discountAmount Number,
+ispercentage char(1),
+isamount char(1),
+primary key (discountID)
+);
+
+create table Salestax(
+StateID NUMBER,
+State Varchar(50),
+TaxRate NUMBER,
+primary key (StateID)
+);
+ 
+create table Categories(
+CategoryID NUMBER,
+CategoryName Varchar(50),
+primary key (CategoryID)
+);
+
+create table Restaurants(
+restaurantID NUMBER,
+restaurantName Varchar(100),
+address Varchar(500),
+phoneNumber Number,
+currentstatus Varchar(50),
+zipCode Number,
+state VARCHAR(50),
+averageWaitTime Number,
+averageReviewScore FLOAT,
+primary key (restaurantID)
+);
+
+create table RestaurantCategories(
+restaurantID NUMBER,
+CategoryID NUMBER,
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId),
+foreign key (CategoryID) REFERENCES Categories(CategoryID)
+);
+
+create table Fooditems(
+DishID NUMBER,
+RestaurantID Number,
+DishName VARCHAR(50),
+Price Number,
+primary key (DishID),
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId)
+);
+
+create table Review(
+reviewId NUMBER,
+customerId NUMBER,
+restaurantId NUMBER,
+reviewdate DATE,
+reviewscore FLOAT,
+comments VARCHAR(200),
+primary key (reviewId),
+foreign key (customerId) REFERENCES Customer(customerId),
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId)
+); 
+
+
+create table Cart(
+cartId NUMBER,
+customerId NUMBER,
+restaurantId NUMBER,
+status VARCHAR(50),
+primary key (cartId),
+foreign key (customerId) REFERENCES Customer(customerId),
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId)
+);
+
+create table CartDetails(
+cartdetailsId NUMBER,
+cartId NUMBER,
+restaurantId NUMBER,
+dishId NUMBER,
+quantity Number,
+primary key (cartdetailsId),
+foreign key (cartId) REFERENCES Cart(cartId),
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId),
+foreign key (dishId) REFERENCES FoodItems(dishId)
+);
+
+create table Orders(
+orderId NUMBER,
+customerId NUMBER,
+restaurantId NUMBER,
+ordertime TIMESTAMP,
+deliverytime TIMESTAMP,
+estimatedtime NUMBER,
+status Number,
+paymentstatus varchar(50),
+totalcost NUMBER,
+deliverymethod NUMBER,
+primary key (orderId),
+foreign key (customerId) REFERENCES Customer(customerId),
+foreign key (restaurantId) REFERENCES Restaurants(restaurantId)
+);
+
+create table OrderDetails(
+orderdetailsId NUMBER,
+orderId NUMBER,
+cartId NUMBER,
+primary key (orderdetailsId),
+foreign key (orderId) REFERENCES Orders(orderId),
+foreign key (cartId) REFERENCES Cart(cartId)
+);
+
+create table PaymentRecords(
+paymentId NUMBER,
+customerId NUMBER,
+paymenttime TIMESTAMP,
+orderId NUMBER,
+paymentamount NUMBER,
+paymentmethod VARCHAR(50),
+primary key (paymentId),
+foreign key (customerId) REFERENCES Customer(customerId),
+foreign key (orderId) REFERENCES Orders(orderId)
+);
+
+create table Message(
+messageId NUMBER,
+customerId NUMBER,
+messagetime TIMESTAMP,
+messagebody VARCHAR(500),
+primary key (messageId),
+foreign key (customerId) REFERENCES Customer(customerId)
+);
+
+create table customerdiscounts (
+CustDiscountID NUMBER,
+customerID NUMBER, 
+DiscountID NUMBER,
+DiscountStartdate DATE,
+DiscountEndDate DATE,
+primary key (CustDiscountID),
+foreign key (customerId) REFERENCES Customer(customerId),
+foreign key (DiscountID) REFERENCES Discounts(DiscountID)
+);
+
+
+
+CREATE  SEQUENCE customers_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+ 
+ 
+CREATE  SEQUENCE orders_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+ 
+ 
+CREATE  SEQUENCE review_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+ 
+ 
+CREATE  SEQUENCE cart_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+ 
+ CREATE  SEQUENCE cartdetails_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+ 
+ CREATE  SEQUENCE paymentrecords_seq
+ START WITH     1
+ INCREMENT BY   1
+ MINVALUE 0
+ NOCACHE
+ NOCYCLE;
+
+CREATE SEQUENCE  MESSAGE_SEQ  
+INCREMENT BY 1 
+START WITH 1 ;
+
+CREATE SEQUENCE  orderdetails_seq  
+INCREMENT BY 1 
+START WITH 1 ;
+
+
+CREATE SEQUENCE  restaurants_seq  
+INCREMENT BY 1 
+START WITH 1 ;
+
+
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Tamil','12 Rambling oak Road' , 21228,'Maryland','tamil@gmail.com',10);
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Jayesh','20 Northbound Road' , 21203,'New Jersey','jayesh@gmail.com',20);
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Monil','30 SouthBound Road' , 21305,'Maryland','monil@gmail.com',30);
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Sathwik','40 Eastbound Road' , 21407,'Virginia','sathwik@gmail.com',40);
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Bhargavi','50 Westbound Road' , 21004,'Delaware','bhargavi@gmail.com',50);
+INSERT INTO CUSTOMER VALUES(customers_seq.nextval,'Arun','70 Edmondson Avenue' , 21228,'Maryland','arun@gmail.com',60);
+
+
+INSERT INTO DISCOUNTS VALUES(1,'Free delivery',1,NULL,'N','Y');
+INSERT INTO DISCOUNTS VALUES(2,'10 % off on the order amount',2,0.1,'Y','N');
+INSERT INTO DISCOUNTS VALUES(3,'20$ off on the order amount',3,20,'N','Y');
+
+
+INSERT INTO salestax VALUES(1,'Maryland',10);
+INSERT INTO salestax VALUES(2,'New Jersey',15);
+INSERT INTO salestax VALUES(3,'Virginia',18);
+INSERT INTO salestax VALUES(4,'Delaware',22);
+
+
+INSERT INTO categories VALUES(1,'Fastfood');
+INSERT INTO categories VALUES(2,'Indian');
+INSERT INTO categories VALUES(3,'Italian');
+INSERT INTO categories VALUES(4,'Chinese');
+INSERT INTO categories VALUES(5,'Bugers');
+
+INSERT INTO restaurants VALUES(restaurants_seq.nextval,'McDonalds','1092 rolling hills',4436018769,'Open',21228,'Maryland',15,4.5);
+INSERT INTO restaurants VALUES(restaurants_seq.nextval,'Persis Indian Grill','102 rolling circle',4436018269,'Open',21203,'New Jersey',25,4.7);
+INSERT INTO restaurants VALUES(restaurants_seq.nextval,'AppleBees','1092 rolling hills',4436098769,'Open',21228,'Maryland',30,4.9);
+INSERT INTO restaurants VALUES(restaurants_seq.nextval,'Panda Express','2091 drice road',4431018769,'Open',21407,'Virginia',5,4.0);
+INSERT INTO restaurants VALUES(restaurants_seq.nextval,'Pizzahut','289 cedarrun hills',4236018769,'Open',21228,'Maryland',40,4.1);
+
+
+INSERT INTO RestaurantCategories VALUES(1,1);
+INSERT INTO RestaurantCategories VALUES(1,5);
+INSERT INTO RestaurantCategories VALUES(2,2);
+INSERT INTO RestaurantCategories VALUES(3,1);
+INSERT INTO RestaurantCategories VALUES(4,4);
+INSERT INTO RestaurantCategories VALUES(5,3);
+INSERT INTO RestaurantCategories VALUES(5,1);
+
+
+INSERT INTO FOODITEMS VALUES(1,1,'FrenchFries',10);
+INSERT INTO FOODITEMS VALUES(2,1,'ChickenBurger',20);
+INSERT INTO FOODITEMS VALUES(3,1,'Milkshake',15);
+INSERT INTO FOODITEMS VALUES(4,2,'ChickenBiriyani',18);
+INSERT INTO FOODITEMS VALUES(5,2,'VegBiriyani',20);
+INSERT INTO FOODITEMS VALUES(6,2,'ChickenTikka',16);
+INSERT INTO FOODITEMS VALUES(7,3,'SteakBBQ',30);
+INSERT INTO FOODITEMS VALUES(8,4,'EggFriedRice',12);
+INSERT INTO FOODITEMS VALUES(9,4,'KungPaoChicken',16);
+INSERT INTO FOODITEMS VALUES(10,5,'PepperoniPizza',23);
+INSERT INTO FOODITEMS VALUES(11,1,'Smoothie',30);
+INSERT INTO FOODITEMS VALUES(12,1,'Salads',20);
+INSERT INTO FOODITEMS VALUES(13,1,'coffee',15);
+
+
+INSERT INTO REVIEW values (review_seq.nextval,2,1,sysdate,4,'Good');
+INSERT INTO REVIEW values (review_seq.nextval,3,2,to_date('11-SEP-22'),5,'very Good');
+INSERT INTO REVIEW values (review_seq.nextval,4,3,to_date('16-apr-22'),4,'very Good');
+INSERT INTO REVIEW values (review_seq.nextval,5,4,to_date('11-jun-22'),5,'very Good');
+INSERT INTO REVIEW values (review_seq.nextval,6,5,to_date('11-SEP-22'),5,'very Good');
+
+
+INSERT INTO  cart values(cart_seq.nextval,2,1,'inprogress');
+INSERT INTO  cart values(cart_seq.nextval,3,2,'closed');
+INSERT INTO  cart values(cart_seq.nextval,4,3,'closed');
+INSERT INTO  cart values(cart_seq.nextval,5,4,'closed');
+INSERT INTO  cart values(cart_seq.nextval,6,1,'closed');
+INSERT INTO  cart values(cart_seq.nextval,2,2,'closed');
+INSERT INTO  cart values(cart_seq.nextval,3,5,'closed');
+
+
+INSERT INTO  cartdetails values(cartdetails_seq.nextval,1,1,2, 2);
+INSERT INTO  cartdetails values(cartdetails_seq.nextval,1,1,1, 2);
+INSERT INTO  cartdetails values(cartdetails_seq.nextval,1,1,3, 1);
+INSERT INTO  cartdetails values(cartdetails_seq.nextval,1,1,11, 3);
+INSERT INTO  cartdetails values(cartdetails_seq.nextval,1,1,13, 1);
+
+
+INSERT INTO ORDERS VALUES(orders_seq.nextval,2,1,current_timestamp,current_timestamp + interval '30' MINUTE,30,1,'paid',78,1);
+INSERT INTO ORDERS VALUES(orders_seq.nextval,3,2,current_timestamp,current_timestamp + interval '45' MINUTE,45,2,'paid',56,2);
+INSERT INTO ORDERS VALUES(orders_seq.nextval,4,3,current_timestamp,current_timestamp + interval '15' MINUTE,15,2,'paid',98,1);
+INSERT INTO ORDERS VALUES(orders_seq.nextval,5,4,current_timestamp,current_timestamp + interval '60' MINUTE,60,2,'paid',34,2);
+INSERT INTO ORDERS VALUES(orders_seq.nextval,2,2,current_timestamp,current_timestamp + interval '30' MINUTE,30,2,'paid',78,1);
+INSERT INTO ORDERS VALUES(orders_seq.nextval,3,5,current_timestamp,current_timestamp + interval '30' MINUTE,30,2,'paid',78,1);
+
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,1,1);
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,2,2);
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,3,3);
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,4,4);
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,5,5);
+INSERT INTO ORDERDETAILS VALUES(orderdetails_seq.nextval,5,5);
+
+
+insert into paymentrecords values(paymentrecords_seq.nextval,2,current_timestamp - interval '2' minute, 1,78,'creditcard');
+insert into paymentrecords values(paymentrecords_seq.nextval,3,current_timestamp - interval '2' minute, 2,56,'paypal');
+insert into paymentrecords values(paymentrecords_seq.nextval,4,current_timestamp - interval '2' minute, 3,98,'applepay');
+insert into paymentrecords values(paymentrecords_seq.nextval,5,current_timestamp - interval '2' minute, 4,34,'creditcard');
+insert into paymentrecords values(paymentrecords_seq.nextval,2,current_timestamp - interval '2' minute, 5,56,'paypal');
+insert into paymentrecords values(paymentrecords_seq.nextval,3,current_timestamp - interval '2' minute, 5,56,'paypal');
+
+
+insert into message values(MESSAGE_SEQ.nextval,2,current_timestamp,'Your order is in progress');
+insert into message values(MESSAGE_SEQ.nextval,3,current_timestamp,'Your order is delivered');
+insert into message values(MESSAGE_SEQ.nextval,4,current_timestamp,'Your order is picked up');
+insert into message values(MESSAGE_SEQ.nextval,5,current_timestamp,'Your order is delivered');
+insert into message values(MESSAGE_SEQ.nextval,5,current_timestamp,'Your order is cancelled');
+
+insert into customerdiscounts values(1,2,1,date '10-05-22',date '10-12-22');
+insert into customerdiscounts values(2,3,2,date '10-02-22',date '10-12-23');
+insert into customerdiscounts values(3,4,3,date '10-05-23',date '10-12-23');
+insert into customerdiscounts values(4,5,1,date '10-08-22',date '10-12-23');
+insert into customerdiscounts values(5,6,2,date '10-05-22',date '10-12-22');
+ 
+select * from customer;
+select * from discounts;
+select * from salestax;
+select * from restaurants;
+select * from restaurantcategories;
+select * from categories;
+select * from fooditems;
+select * from review;
+select * from cart;
+select * from cartdetails;
+select * from orders;
+select * from orderdetails;
+select * from paymentrecords;
+select * from message;
+select * from customerdiscounts;
+
+Create or replace type RESTAURANT_LIST as varray(50) of varchar(200);
+/
+
+commit;
+

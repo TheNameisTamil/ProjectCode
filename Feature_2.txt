@@ -1,0 +1,41 @@
+-- Start of Feature 2 --
+/* 
+This procedure accepts the customer email as input and validates the same and if a customer with the same email does not exist procedure outputs no such customer else outputs the profile of the customer including name, address, state, zip code, email, credit, the total number of orders with status 2(delivered) in the last six months and total amount spent in the last six months.
+
+Author: Sathwik Muduthanapelly
+*/
+CREATE OR REPLACE PROCEDURE CUSTOMER_PROFILE_PR (V_EMAIL VARCHAR)
+IS 
+CURSOR C1 IS SELECT CUSTOMERID,NAME,ADDRESS,STATE,ZIPCODE,EMAIL,CREDIT FROM CUSTOMER WHERE EMAIL = V_EMAIL;
+R C1%ROWTYPE;
+V_COUNT INT;
+VAR_NO_OF_ORDERS INT;
+VAR_TOTAL_COST INT;
+
+BEGIN
+--- step 1 : checking if the customer with same email exists
+ SELECT COUNT(*) INTO V_COUNT FROM CUSTOMER WHERE EMAIL = V_EMAIL;
+ IF V_COUNT = 0 THEN 
+   DBMS_OUTPUT.PUT_LINE('NO SUCH CUSTOMER');
+ ELSE
+--- step 2 : Outputs profile of the customer for the last 6 months
+ OPEN C1;
+ FETCH C1 INTO R;
+ SELECT COUNT(*) NO_OF_ORDERS,NVL(SUM(TOTALCOST),0) INTO VAR_NO_OF_ORDERS,VAR_TOTAL_COST FROM ORDERS WHERE TRUNC(DELIVERYTIME) < SYSDATE AND 
+ TRUNC(DELIVERYTIME) > TRUNC(DELIVERYTIME) - INTERVAL '6' MONTH AND CUSTOMERID=R.CUSTOMERID AND STATUS=2;
+    DBMS_OUTPUT.PUT_LINE( 'PROFILE OF THE CUSTOMER ' ||  CHR(10) || 'NAME OF THE CUSTOMER : ' || R.NAME ||  CHR(10) || 'ADDRESS : ' ||  R.ADDRESS || CHR(10) || 'STATE : ' ||  R.STATE || CHR(10) ||
+    'ZIPCODE : ' ||  R.ZIPCODE || CHR(10) || 'EMAIL : ' ||  R.EMAIL || CHR(10) || 'CREDIT : ' || R.CREDIT || CHR(10) || 'TOTAL ORDERS : ' || VAR_NO_OF_ORDERS || CHR(10) || 'TOTAL_COST : ' || VAR_TOTAL_COST  );
+    CLOSE C1;
+ END IF;
+END;
+/
+
+-- case 1 : Customer profile display 
+select * from customer where customerid=1;
+exec CUSTOMER_PROFILE_PR('tamil@gmail.com');
+
+-- case 2 : Not a valid customer 
+select * from customer where customerid=1;
+exec CUSTOMER_PROFILE_PR('zekelandon@gmail.com');
+
+-- End of feature 02--

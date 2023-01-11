@@ -1,0 +1,95 @@
+-- Start of feature 10 -- 
+
+/*
+This procedure accepts customer ID, restaurant ID, and a dish ID as input and validates the same and creates a new shopping cart
+if it does not exist and adds dishes to the cart.
+
+Author: Sathwik Muduthanapelly 
+*/
+
+create or replace procedure Add_Dishes_Pr(Cust_ID_in IN Number, Rest_ID_in IN Number, Dish_ID_in IN Number) is
+
+temp_count int;
+new_cart_id_var number;
+cartid_var number;
+dish_qty_var number;
+number_one number :=1;
+
+begin
+-- checking if the input customer id is valid
+select count(*) into temp_count from customer where customerid=Cust_ID_in;
+if temp_count =0 then
+    dbms_output.put_line('Invalid Customer ID');
+     return;
+end if;
+-- checking if the input Restaurant id is valid
+select count(*) into temp_count from restaurants where restaurantid = Rest_ID_in and currentstatus='Open';
+ if temp_count = 0 then
+    dbms_output.put_line('Invalid Restaurant ID or the restaurant id is closed.');
+        return;
+end if;
+-- checking if the input dish id is valid
+select count(*) into temp_count from fooditems where dishid=Dish_ID_in and restaurantid = Rest_ID_in;
+if temp_count =0 then
+    dbms_output.put_line('Invalid Dish ID'); 
+    return;
+end if; 
+select count(*) into temp_count from cart where customerid=Cust_ID_in and restaurantid = Rest_ID_in and status='inprogress';
+-- checking if a cart already exists and if it does add the dish to the cart 
+if temp_count >0 then
+    select cartid into cartid_var from cart  where customerid=Cust_ID_in and restaurantid = Rest_ID_in and status='inprogress';
+    dbms_output.put_line('A cart exists for the input customer and the cart id is : ' || cartid_var); 
+    select count(*)into temp_count from cartdetails where cartid = cartid_var and dishid=Dish_ID_in ;
+    if temp_count = 0 then
+        dbms_output.put_line('The dish is not present in the cart . Adding the dish to the cart'); 
+        insert into cartdetails values(cartdetails_seq.nextval,cartid_var,Rest_ID_in,Dish_ID_in,number_one);
+    else
+        dbms_output.put_line('The dish is already present in the cart . Updating the quantity'); 
+        update cartdetails set quantity=quantity+1 where cartid = cartid_var and dishid=Dish_ID_in;
+    end if;
+else
+-- creating a new cart as a cart does not exist in the previous case and add the dishes to the cart.
+    new_cart_id_var:=CART_SEQ.nextval;  
+    insert into cart values (new_cart_id_var,Cust_ID_in,Rest_ID_in,'inprogress');
+    dbms_output.put_line('A new cart created for the input customer with the cart id : ' || new_cart_id_var);
+    dbms_output.put_line('Adding the dish to the new cart');
+    insert into cartdetails values(cartdetails_seq.nextval,new_cart_id_var,Rest_ID_in,Dish_ID_in,number_one);
+   
+end if;
+end;
+/
+
+-- Case 1 : Dish is present in the cart and increasing the quantity
+select * from cartdetails where dishid=1;
+exec Add_Dishes_Pr(2,1,1);
+select * from cartdetails where dishid=1;
+
+-- Case 2 : Dish is not present in the cart and adding the dish
+delete from cartdetails where dishid=11;
+commit;
+select * from cartdetails where dishid=11;
+exec Add_Dishes_Pr(2,1,11);
+select * from cartdetails where dishid=11;
+
+-- Case 3 : Creating a new cart and adding a dish to it. 
+select * from cart ;
+exec Add_Dishes_Pr(3,1,11);
+select * from cart ;
+select * from cartdetails;
+delete from cartdetails where cartid=6;
+delete from cart where cartid=6;
+commit;
+
+-- Case 4 : Invalid Customer id 
+Select * from customer;
+exec Add_Dishes_Pr(10,1,11);
+
+-- Case 5 : Invalid Restaurant id 
+Select * from Restaurants;
+exec Add_Dishes_Pr(1,10,11);
+
+-- Case 6 : Invalid Dish id 
+Select * from fooditems;
+exec Add_Dishes_Pr(1,1,20);
+
+-- End of feature 10 -- 

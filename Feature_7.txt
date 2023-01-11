@@ -1,0 +1,80 @@
+
+-- Start of feature 7 -- 
+/*
+This procedure accepts order id and new status as input and updates the order table with the new status and
+inserts messages into the message table according to the stauts in the input. 
+
+Author : Jayesh Jaywant Naik
+*/
+create or replace PROCEDURE UPDATE_ORDERSTATUS_PR(ORDER_ID_I IN NUMBER, NEWSTATUS_I IN NUMBER)
+AS
+
+TEMP_COUNT INT;
+TEMP_CUSTOMERID NUMBER;
+TEMP_PAYMENTAMOUNT NUMBER;
+TEMP_PAYMENTMETHOD VARCHAR(50);
+
+BEGIN
+
+ -- Checks for a valid order id 
+SELECT NVL(COUNT(*),0) INTO TEMP_COUNT FROM ORDERS WHERE ORDERID = ORDER_ID_I;
+IF TEMP_COUNT > 0 THEN 
+    DBMS_OUTPUT.PUT_LINE('VALID ORDERID');
+    SELECT CUSTOMERID INTO TEMP_CUSTOMERID FROM ORDERS WHERE ORDERID = ORDER_ID_I;
+    
+    -- If Status is 1 it print In-progress
+    IF NEWSTATUS_I = 1 THEN
+        DBMS_OUTPUT.PUT_LINE('IN-PROGRESS');
+        
+    -- If Status is 2 it print It updates orders and message table 
+    ELSIF NEWSTATUS_I = 2 THEN
+        DBMS_OUTPUT.PUT_LINE('DELIVERED');
+        UPDATE ORDERS SET STATUS=2 WHERE ORDERID = ORDER_ID_I;
+        INSERT INTO MESSAGE VALUES(MESSAGE_SEQ.NEXTVAL,TEMP_CUSTOMERID,SYSTIMESTAMP,'YOUR ORDER ' || ORDER_ID_I || ' HAS BEEN DELIVERED');
+        
+    -- If Status is 2 it print It updates, paymetnamount ,paymenmethod ,message and payment records table 
+    ELSIF NEWSTATUS_I = 3 THEN
+        DBMS_OUTPUT.PUT_LINE('CANCELLED');
+        UPDATE ORDERS SET STATUS=3 WHERE ORDERID = ORDER_ID_I;
+        SELECT PAYMENTAMOUNT INTO TEMP_PAYMENTAMOUNT FROM PAYMENTRECORDS WHERE ORDERID = ORDER_ID_I;
+        SELECT PAYMENTMETHOD INTO TEMP_PAYMENTMETHOD FROM PAYMENTRECORDS WHERE ORDERID = ORDER_ID_I;
+        INSERT INTO MESSAGE VALUES(MESSAGE_SEQ.NEXTVAL,TEMP_CUSTOMERID,SYSTIMESTAMP,'YOUR ORDER ' || ORDER_ID_I || ' HAS BEEN CANCELLED AND REFUND ISSUED');
+        INSERT INTO PAYMENTRECORDS VALUES(PAYMENTRECORDS_SEQ.NEXTVAL,TEMP_CUSTOMERID,SYSTIMESTAMP,ORDER_ID_I,-(TEMP_PAYMENTAMOUNT),TEMP_PAYMENTMETHOD);
+        
+    -- If Status other than 1,2,3 it is invalid it prints invalid status
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('INVALID STATUS');
+    END IF;
+ELSE 
+    DBMS_OUTPUT.PUT_LINE('INVALID ORDERID');
+END IF;
+END;
+/
+
+--Use Cases:
+
+--Case 1 : Valid Order Id and status is Inprogress
+select * from orders where orderid=1;
+exec UPDATE_ORDERSTATUS_PR(1,1);
+select * from orders where orderid=1;
+
+--Case 2 : Valid Order ID and status is Delivered
+select * from orders where orderid=1;
+exec UPDATE_ORDERSTATUS_PR(1,2);
+select * from orders where orderid=1;
+select * from message order by messageid desc; 
+
+--Case 3 : Valid Order ID and status is Cancelled
+select * from orders where orderid=3;
+exec UPDATE_ORDERSTATUS_PR(3,3);
+select * from orders where orderid=3;
+select * from message order by messageid desc; 
+select * from paymentrecords order by paymentid desc;
+
+--Case 4 : Invalid Order ID 
+exec UPDATE_ORDERSTATUS_PR(50,3);
+
+--Case 5 : Invalid Status 
+exec UPDATE_ORDERSTATUS_PR(1,4);
+
+-- End of feature 7 -- 

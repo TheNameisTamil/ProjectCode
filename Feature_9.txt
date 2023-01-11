@@ -1,0 +1,45 @@
+-- start of feature 09 -- 
+
+/*
+This procedure accepts restaurant id asn input and displays all review of that restaurant
+
+Author : Tamil selvan Guruanthan
+*/
+
+CREATE OR REPLACE PROCEDURE VIEW_REVIEWS_PR (REST_ID IN NUMBER) IS
+-- Storing the review details into the cursor
+CURSOR C1 IS SELECT RES.RESTAURANTNAME, REV.REVIEWDATE,CUS.NAME,REV.REVIEWSCORE,REV.COMMENTS FROM CUSTOMER CUS,REVIEW REV, RESTAURANTS RES WHERE REV.RESTAURANTID = RES.RESTAURANTID AND CUS.CUSTOMERID=REV.CUSTOMERID AND RES.RESTAURANTID=REST_ID;
+
+TEMP_COUNT NUMBER;
+VAR_RESTAURANTNAME VARCHAR(40);
+SEQ NUMBER;
+BEGIN
+    SEQ:=1;
+    -- Checking for a valid restaurant id
+    SELECT NVL(COUNT(*),0),RESTAURANTNAME INTO TEMP_COUNT, VAR_RESTAURANTNAME FROM RESTAURANTS WHERE RESTAURANTID=REST_ID GROUP BY RESTAURANTNAME;
+IF TEMP_COUNT >0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESTAURANT NAME  :' || VAR_RESTAURANTNAME); 
+    -- printing the reviews of the restaurant
+    FOR R IN C1 LOOP
+        DBMS_OUTPUT.PUT_LINE(SEQ || '. CUSTOMER ' || R.NAME ||  ' RATED ' || R.REVIEWSCORE || ' ON ' || R.REVIEWDATE || ' AND COMMENTED: ' || R.COMMENTS ); 
+        SEQ:=SEQ+1;
+    END LOOP;
+ELSE
+    DBMS_OUTPUT.PUT_LINE('THE RESTAURANT ID IS INVALID');
+END IF;
+
+EXCEPTION 
+    WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('THE RESTAURANT ID IS INVALID');
+END;
+/
+
+select * from restaurants;
+--case 1 : REviews of valid restaurant id 
+select * from review where restaurantid=5;
+EXEC VIEW_REVIEWS_PR('5');
+
+--case 2 : Invalid restaurant id 
+EXEC VIEW_REVIEWS_PR('10');
+select * from review where restaurantid=10;
+-- End of feature 09 -- 

@@ -1,0 +1,81 @@
+-- Start of feature 12 -- 
+
+/*
+ Generate an order with dishes in a shopping cart. 
+ Input are cart ID, order time, delivery method (1 deliver, 2 pickup), estimated time, tip, payment method (1 credit/debit, 2 apple pay, 3 paypal).
+ Output: Check if cart id is valid or not, if valid then it calls feature 11 to compute total amount with tip(input) amount. After that, it insert values into orders tabe,
+         message table and payment record table. Deletes value from shopping cart table. 
+        
+Author: Monil Darshan Mehta
+*/
+create or replace Procedure Generateorder_1(cartid_i number, ordertime_i timestamp, deliverymethod_i number,estimatedtime_i number, tip_i number, paymentmethod_i varchar)
+Is
+-- Variables Declared
+cart_count number; 
+cust_id_var number;
+rest_id_var number;
+order_id_var number;
+totalamount number;
+message_body varchar(300);
+rest_name_var varchar(100);
+total_amount number;
+tax_amount number; 
+
+
+Begin
+-- storing sequence of order in a variable
+order_id_var:= orders_seq.nextval; 
+-- storing value of count into cart_count
+select count(*) into cart_count 
+from cart 
+where cartid = cartid_i and status='inprogress'; 
+-- checking condition for cartid
+    if cart_count = 0 then 
+        dbms_output.put_line('No such cartid. Exiting the procedure');
+    else  
+-- calling feature 11
+    calculate_Price_pr(cartid_i,ordertime_i,deliverymethod_i,tax_amount);
+    DBMS_OUTPUT.PUT_LINE('Total amount computed from feture 11 is : ' || tax_amount);
+-- Calculating the tip and adding it to the total amount
+    total_amount:= tax_amount + tip_i; 
+    DBMS_OUTPUT.PUT_LINE('Total amount including tip : ' ||total_amount);
+
+        select customerid, restaurantid into cust_id_var, rest_id_var from cart 
+        where cartid = cartid_i; 
+    -- inserting a new order with calculated values into order table
+        insert into orders values(order_id_var, cust_id_var, rest_id_var, ordertime_i, null, estimatedtime_i, 1, 'paid', total_amount, deliverymethod_i); 
+    --inserting  new values into order details table
+        insert into orderdetails values(orderdetails_seq.nextval, order_id_var, cartid_i);
+    -- deleting from cartdetails table as its a tempporary table to store the dishes in the cart
+        delete from cartdetails where cartid = cartid_i; 
+    -- updating status from cart table to closed  as the details has been entered into orders table
+        update cart
+        set status = 'closed'
+        where cartid = cartid_i and status = 'inprogress'; 
+    
+        select r.restaurantname into rest_name_var
+        from cart c inner join restaurants r on c.restaurantid = r.restaurantid
+        where cartid = cartid_i; 
+    -- variable used to store body of message    
+        message_body:= 'Order '  || order_id_var || ' is placed at Restaurant '  || rest_name_var || ' with estimated time '  || estimatedtime_i || ' and amount '  || total_amount; 
+    -- inserting values into message table
+        insert into message values(message_seq.nextval, cust_id_var,ordertime_i, message_body); 
+    -- inserting values into payment method    
+        insert into paymentrecords values(PaymentRecords_seq.nextval, cust_id_var,ordertime_i,order_id_var,total_amount,paymentmethod_i); 
+end if;
+end;
+/
+--case 1 (Positive case - cart id is valid)
+select * from orders where orderid=(select orderid from orderdetails where cartid=1);
+select * from orderdetails where cartid=1;
+select * from cart where cartid=1;
+select * from cartdetails where cartid=1;
+commit;
+exec Generateorder_1(1,'12-may-22',2,30,70,'applepay');
+
+--case 2 (Negative case - cart id is not valid)
+select * from cart where cartid=20;
+exec Generateorder_1(20,sysdate,2,30,70,'applepay');
+
+-- End of feature 12 -- 
+

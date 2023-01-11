@@ -1,0 +1,115 @@
+-- Start of feature 11
+
+/*
+This procedure will compute the total amount for dishes in the cart  . Input will be cartid, checkouttime, delivery method and an output parameter will be used for total amount.
+Author: Bhargavi Gudapati*/
+
+create or replace procedure calculate_Price_pr(cartId_i in number, checkouttime_i in timestamp, del_method_i in number, amount_o out float) as 
+cursor c1 is select c.cartid,c.customerid,c.restaurantid,cd.dishid,cd.quantity,fi.dishname,fi.price,r.zipcode from cart c, cartdetails cd , fooditems fi , restaurants r where c.cartid = cd.cartid and c.restaurantid=r.restaurantid and fi.dishid=cd.dishid and c.cartid=cartId_i;
+discount_var float;
+total_amount_var float;
+Customer_id_var number;
+temp_count_var number;
+discount_id_var number;
+zipcode_var number;
+restaurant_id_var number;
+total_amount_del_var number;
+delivery_fee number;
+begin
+total_amount_var:= 0;
+
+select count(*) into temp_count_var from cart where cartid = cartId_i and status ='inprogress';
+if temp_count_var =0 then
+dbms_output.put_line(' Invalid cart id . Exiting the procedure');
+return;
+end if ;
+-- step 1 : Sum up the price for each dish in the cart
+
+for i in c1 loop
+Customer_id_var:=i.customerid;
+zipcode_var:= i.zipcode;
+restaurant_id_var:= i.restaurantid;
+total_amount_var:=total_amount_var+(i.price*i.quantity);
+end loop;
+dbms_output.put_line(' Total Bill amount :' || total_amount_var);
+-- step 2 : Checking if the checkout time is valid
+
+select count(*),discountid into temp_count_var, discount_id_var from customerdiscounts where  discountstartdate <= date'10-12-22' and discountenddate >= date'10-12-22' and customerid = Customer_id_var group by discountid; 
+if temp_count_var = 0 then
+dbms_output.put_line('No discount for the customer');
+else
+-- step 2 cntd : Applying discounts based on the customers discount id
+if discount_id_var = 1 then
+dbms_output.put_line('free delivery');
+elsif discount_id_var = 2 then
+total_amount_var:=(total_amount_var*0.9);
+dbms_output.put_line('10% discount on the total bill. Bill amount :' || total_amount_var);
+else
+total_amount_var:=(total_amount_var-20);
+dbms_output.put_line('20$ discount on the total bill. Bill amount :' || total_amount_var);
+end if;
+-- step 3 : Applying delivery discounts based on the customers discount id and delivery method
+
+if discount_id_var != 1 and del_method_i =1 then
+select count(*) into temp_count_var from customer where customerid = Customer_id_var and zipcode = zipcode_var;
+if temp_count_var =0 then
+delivery_fee:=5;
+dbms_output.put_line('5$ delivery fee charged on the bill. Bill amount  ' );
+else
+delivery_fee:=2;
+dbms_output.put_line('2$ delivery fee charged on the bill. Bill amount ' );
+end if;
+
+else 
+delivery_fee:=0;
+dbms_output.put_line('No delivery fee charged on the bill');
+total_amount_var:=(total_amount_var);
+end if;
+-- step 3 : Applying sales tax to the bill amount before delivery fee
+
+select taxrate into temp_count_var from restaurants r , salestax s where s.state=r.state and r.restaurantid = restaurant_id_var;
+total_amount_var:=total_amount_var+(total_amount_var*(temp_count_var/100));
+dbms_output.put_line('State tax charged is ' || temp_count_var || ' %');
+end if;
+amount_o:=total_amount_var+delivery_fee;
+dbms_output.put_line('Total amount including sales tax without delivery fee ' || amount_o);
+end;
+/
+
+
+--Case 1:  No delivery fee is charged delivery fee is charged
+declare
+tax_amount float;
+begin
+calculate_Price_pr(1,'12-may-22',2,tax_amount);
+end;
+/
+
+-- Case 2 :  delivery fee is charged
+update customerdiscounts set discountid=2 where customerid=2;
+commit;
+declare
+tax_amount float;
+begin
+calculate_Price_pr(1,'12-may-22',1,tax_amount);
+end;
+/
+
+--Case 3:  Invalid Cart id 
+declare
+tax_amount float;
+begin
+calculate_Price_pr(2,'12-may-22',1,tax_amount);
+end;
+/
+-- case 4: Not a valid cart id 
+
+-- delivery fee is charged
+declare
+tax_amount float;
+begin
+calculate_Price_pr(2,'12-may-22',1,tax_amount);
+end;
+/
+
+-- End of feature 11

@@ -1,0 +1,28 @@
+
+drop table customer cascade constraints;
+drop table discounts cascade constraints;
+drop table salestax cascade constraints;
+drop table restaurants cascade constraints;
+drop table restaurantcategories cascade constraints;
+drop table categories cascade constraints;
+drop table fooditems cascade constraints;
+drop table review cascade constraints;
+drop table cart cascade constraints;
+drop table cartdetails cascade constraints;
+drop table orders cascade constraints;
+drop table orderdetails cascade constraints;
+drop table paymentrecords cascade constraints;
+drop table message cascade constraints;
+drop table customerdiscounts cascade constraints;
+
+drop sequence cart_seq;
+drop sequence cartdetails_seq;
+drop sequence customers_seq;
+drop sequence orders_seq;
+drop sequence PAYMENTRECORDS_SEQ;
+drop sequence review_seq;
+drop sequence MESSAGE_SEQ;
+drop sequence orderdetails_seq;
+drop sequence restaurants_seq;
+
+commit;

@@ -1,0 +1,43 @@
+-- Start of feature 03 -- 
+
+/* 
+This procedure accepts category name as input and validates if the current status of the restaurnats is = "OPEN' and whether the catefory name matches with the input. If it so then it prints the restaurant name, zip code, average wait time for the validated conditon
+
+Author: Bhargavi Gudapati
+*/
+
+CREATE OR REPLACE PROCEDURE SEARCH_RESTAURANTS_PR(INPUT_CATEGORY_NAME VARCHAR) AS 
+VAR_CAT_NAME VARCHAR(300);  -- INPUT VARIABLES
+
+BEGIN
+-- store the keyword for the category name
+VAR_CAT_NAME:=  '%' || INPUT_CATEGORY_NAME || '%' ;  
+
+DECLARE  CURSOR C1 IS SELECT RESTAURANTNAME, AVERAGEREVIEWSCORE, AVERAGEWAITTIME, ZIPCODE FROM RESTAURANTS WHERE RESTAURANTID  IN (SELECT RESTAURANTID FROM RESTAURANTCATEGORIES R JOIN CATEGORIES C ON C.CATEGORYID = R.CATEGORYID WHERE C.CATEGORYNAME LIKE VAR_CAT_NAME) AND CURRENTSTATUS = 'Open';
+ABC  C1%ROWTYPE;
+BEGIN
+OPEN C1;     
+LOOP          
+FETCH C1 INTO ABC;  
+-- checking if the input restaurant id is valid           
+IF ABC.RESTAURANTNAME IS NULL THEN            
+DBMS_OUTPUT.PUT_LINE('No restaurants matched with the search string');
+END IF;
+EXIT WHEN C1%NOTFOUND;         
+-- print the restaurant name that matches the input category 
+DBMS_OUTPUT.PUT_LINE('RESTAURANTNAME: ' || ABC.RESTAURANTNAME ||'     AVERAGE REVIEW SCORE:  ' || ABC.AVERAGEREVIEWSCORE || '  AVERAGEWAITTIME: ' || ABC.AVERAGEWAITTIME || '  ZIPCODE: ' ||ABC.ZIPCODE);
+END LOOP;
+CLOSE C1;                     
+END;
+END ;
+/
+
+--case 1: Searching the restaurant with category name . Results found
+exec SEARCH_RESTAURANTS_PR('Fast');
+select r.restaurantname, c.categoryname from restaurants r, restaurantcategories rc , categories c where r.restaurantid = rc.restaurantid and rc.categoryid = c.categoryid ;-- End of feature 03 -- 
+
+--case 2: Searching the restaurant with category name . No Results found
+exec SEARCH_RESTAURANTS_PR('Mexi');
+select r.restaurantname, c.categoryname from restaurants r, restaurantcategories rc , categories c where r.restaurantid = rc.restaurantid and rc.categoryid = c.categoryid ;-- End of feature 03 -- 
+
+-- End of feature 03 -- 

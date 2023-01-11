@@ -1,0 +1,42 @@
+-- Start of feature 5 --
+/*
+Show all dishes in a shopping cart.
+Input: Cart Id.
+Output: screen output of ‘the cart id is invalid' if a cart does not contain the Id. If Cart Id is valid 
+then print every dish in shopping cart with their name, price, Quantity.
+
+Author - Monil Darshan Mehta
+*/
+
+CREATE OR REPLACE PROCEDURE SHOPPINGCART_DISHES(V_CARTID NUMBER) 
+IS 
+-- cursor is initialized to fetch dishname, price, quantity
+CURSOR C1 IS SELECT DISHNAME, PRICE, QUANTITY    
+FROM FOODITEMS D, CART C, CARTDETAILS CD
+WHERE C.CARTID = CD.CARTID AND CD.DISHID = D.DISHID AND C.CARTID = V_CARTID;
+T_COUNT INT;
+BEGIN
+--storing value into t_count 
+SELECT COUNT(*) INTO T_COUNT FROM CART 
+WHERE STATUS = 'inprogress' AND CARTID = V_CARTID;  
+ -- condition used to check if cart is valid or not
+    IF T_COUNT = 0 THEN 
+        DBMS_OUTPUT.PUT_LINE ('NOT A VALID CART ID'); 
+    ELSE
+        FOR ITEM IN C1 LOOP 
+        -- displaying the fetched data 
+        DBMS_OUTPUT.PUT_LINE( 'DISH-NAME --> ' || ITEM.DISHNAME ||' PRICE --> ' || ITEM.PRICE ||' QUANTY --> '|| ITEM.QUANTITY); 
+        END LOOP;
+    END IF;
+END;
+/
+
+-- Case 1 : Dishes present in the cart
+select * from cart;
+exec shoppingcart_dishes(1);
+
+-- Case 2 : No dishes in the cart
+exec shoppingcart_dishes(10);
+select * from cart;
+
+-- End of feature 5 --
