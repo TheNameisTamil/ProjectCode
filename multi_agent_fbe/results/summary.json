@@ -1,0 +1,48 @@
+[
+  {
+    "experiment": "exp1_open_grid",
+    "grid_size": 32,
+    "obstacle_cells": 0,
+    "reachable_free_cells": 1024,
+    "unreachable_free_cells": 0,
+    "steps_to_full_coverage": 255,
+    "final_coverage_pct": 100.0,
+    "moves_per_robot": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "total_moves": 1020,
+    "redundant_moves": 0,
+    "cells_first_covered_per_robot": [
+      256,
+      256,
+      256,
+      256
+    ]
+  },
+  {
+    "experiment": "exp2_obstacles",
+    "grid_size": 32,
+    "obstacle_cells": 205,
+    "reachable_free_cells": 819,
+    "unreachable_free_cells": 0,
+    "steps_to_full_coverage": 445,
+    "final_coverage_pct": 100.0,
+    "moves_per_robot": [
+      445,
+      445,
+      444,
+      443
+    ],
+    "total_moves": 1777,
+    "redundant_moves": 962,
+    "cells_first_covered_per_robot": [
+      211,
+      185,
+      173,
+      250
+    ]
+  }
+]

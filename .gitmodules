@@ -1,0 +1,3 @@
+[submodule "external/frontier_exploration"]
+	path = external/frontier_exploration
+	url = https://github.com/naokiyokoyama/frontier_exploration.git
